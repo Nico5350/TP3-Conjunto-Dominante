@@ -3,10 +3,12 @@ package interfaz;
 import negocio.Grafo;
 import negocio.SolverConjuntoDominante;
 import negocio.SolverGoloso;
+import negocio.CargadorDeGrafo;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Set;
+import java.io.*;
 
 public class MainForm extends JFrame {
 	
@@ -40,6 +42,11 @@ public class MainForm extends JFrame {
 		JButton botonAgregarArista = new JButton("Agregar una Arista");
 		botonAgregarArista.setAlignmentX(Component.CENTER_ALIGNMENT);
 		panelAgregar.add(botonAgregarArista);
+		panelAgregar.add(Box.createVerticalStrut(30));
+		
+		JButton botonCargarGrafo = new JButton("Cargar grafo");
+		botonCargarGrafo.setAlignmentX(Component.CENTER_ALIGNMENT);
+		panelAgregar.add(botonCargarGrafo);
 		panelAgregar.add(Box.createVerticalStrut(30));
 
 		JButton botonCalcular = new JButton("Calcular Conjunto Dominante");
@@ -110,6 +117,25 @@ public class MainForm extends JFrame {
 			txtResultados.append("Conjunto Dominante: " + conjuntoDominante.toString() + "\n");
 			txtResultados.append("Tamaño del conjunto: " + conjuntoDominante.size() + "\n");
 			txtResultados.append("Tiempo de ejecución: " + String.format("%.4f", tiempoMs) + " ms\n\n");
+		});
+		
+		botonCargarGrafo.addActionListener(e -> {
+			JFileChooser selector = new JFileChooser();
+			int resultado = selector.showOpenDialog(this);
+			
+			if (resultado == JFileChooser.APPROVE_OPTION) {
+				File archivo = selector.getSelectedFile();
+				CargadorDeGrafo cargador = new CargadorDeGrafo();
+				
+				try {
+					grafo = cargador.cargar(archivo.getAbsolutePath());
+					actualizarInfoGrafo();
+					JOptionPane.showMessageDialog(this, "grafo cargado");
+
+				} catch (FileNotFoundException ex) {
+					JOptionPane.showMessageDialog(this, "no se encontro el archivo");
+				}
+			}
 		});
 	}
 
