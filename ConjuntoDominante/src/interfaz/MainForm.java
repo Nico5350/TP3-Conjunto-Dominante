@@ -2,7 +2,9 @@ package interfaz;
 
 import negocio.Grafo;
 import negocio.SolverConjuntoDominante;
+import negocio.SolverBacktracking;
 import negocio.SolverGoloso;
+import negocio.Verificador;
 import negocio.CargadorDeGrafo;
 
 import javax.swing.*;
@@ -12,6 +14,8 @@ import java.io.*;
 
 public class MainForm extends JFrame {
 	
+	private static final int LIMITE_AVISO_BACKTRACKING = 40;
+
 	private Grafo grafo;
 	private JLabel lblInfoGrafo;
 	private JTextArea txtResultados;
@@ -23,7 +27,7 @@ public class MainForm extends JFrame {
 	
 	private void initialize() {
 		setTitle("TP3 - Conjunto Dominante Minimo");
-		setSize(600, 400); // 
+		setSize(700, 450);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 		setLayout(new BorderLayout());
@@ -49,10 +53,16 @@ public class MainForm extends JFrame {
 		panelAgregar.add(botonCargarGrafo);
 		panelAgregar.add(Box.createVerticalStrut(30));
 
-		JButton botonCalcular = new JButton("Calcular Conjunto Dominante");
+		JButton botonCalcular = new JButton("Calcular (Goloso)");
 		botonCalcular.setAlignmentX(Component.CENTER_ALIGNMENT);
 		botonCalcular.setBackground(new Color(173, 216, 230));
 		panelAgregar.add(botonCalcular);
+		panelAgregar.add(Box.createVerticalStrut(10));
+
+		JButton botonBacktracking = new JButton("Calcular (Backtracking)");
+		botonBacktracking.setAlignmentX(Component.CENTER_ALIGNMENT);
+		botonBacktracking.setBackground(new Color(173, 216, 230));
+		panelAgregar.add(botonBacktracking);
 
 		// panel central
 		JPanel panelCentro = new JPanel(new BorderLayout());
@@ -99,24 +109,23 @@ public class MainForm extends JFrame {
 		});
 
 		botonCalcular.addActionListener(e -> {
-			if (grafo.cantidadVertices() == 0) {
-				JOptionPane.showMessageDialog(this, "El grafo este vacio...");
+			if (grafoVacio())
 				return;
+			ejecutarSolver(new SolverGoloso(), "GOLOSO");
+		});
+
+		botonBacktracking.addActionListener(e -> {
+			if (grafoVacio())
+				return;
+			if (grafo.cantidadVertices() > LIMITE_AVISO_BACKTRACKING) {
+				int opcion = JOptionPane.showConfirmDialog(this,
+						"El backtracking es exponencial y con " + grafo.cantidadVertices()
+								+ " vertices puede tardar mucho y congelar la ventana.\n¿Desea continuar?",
+						"Grafo grande", JOptionPane.YES_NO_OPTION);
+				if (opcion != JOptionPane.YES_OPTION)
+					return;
 			}
-			
-			SolverConjuntoDominante solver = new SolverGoloso();
-			
-			// mide tiempo de ejecucion
-			long startTime = System.nanoTime();
-			Set<Integer> conjuntoDominante = solver.resolver(grafo);
-			long endTime = System.nanoTime();
-			
-			double tiempoMs = (endTime - startTime) / 1_000_000.0;
-			
-			txtResultados.append("\n=== RESULTADO GOLOSO ===\n");
-			txtResultados.append("Conjunto Dominante: " + conjuntoDominante.toString() + "\n");
-			txtResultados.append("Tamaño del conjunto: " + conjuntoDominante.size() + "\n");
-			txtResultados.append("Tiempo de ejecución: " + String.format("%.4f", tiempoMs) + " ms\n\n");
+			ejecutarSolver(new SolverBacktracking(), "BACKTRACKING");
 		});
 		
 		botonCargarGrafo.addActionListener(e -> {
@@ -129,6 +138,7 @@ public class MainForm extends JFrame {
 				
 				try {
 					grafo = cargador.cargar(archivo.getAbsolutePath());
+					txtResultados.setText("");
 					actualizarInfoGrafo();
 					JOptionPane.showMessageDialog(this, "grafo cargado");
 
@@ -139,6 +149,29 @@ public class MainForm extends JFrame {
 				}
 			}
 		});
+	}
+
+	private boolean grafoVacio() {
+		if (grafo.cantidadVertices() == 0) {
+			JOptionPane.showMessageDialog(this, "El grafo esta vacio...");
+			return true;
+		}
+		return false;
+	}
+
+	private void ejecutarSolver(SolverConjuntoDominante solver, String nombre) {
+		// mide tiempo de ejecucion
+		long startTime = System.nanoTime();
+		Set<Integer> conjuntoDominante = solver.resolver(grafo);
+		long endTime = System.nanoTime();
+
+		double tiempoMs = (endTime - startTime) / 1_000_000.0;
+
+		txtResultados.append("\n=== RESULTADO " + nombre + " ===\n");
+		txtResultados.append("Conjunto Dominante: " + conjuntoDominante + "\n");
+		txtResultados.append("Tamaño del conjunto: " + conjuntoDominante.size() + "\n");
+		txtResultados.append("Es dominante: " + (Verificador.esDominante(grafo, conjuntoDominante) ? "si" : "NO") + "\n");
+		txtResultados.append("Tiempo de ejecución: " + String.format("%.4f", tiempoMs) + " ms\n\n");
 	}
 
 	private void actualizarInfoGrafo() {

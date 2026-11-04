@@ -42,4 +42,18 @@ public class CargadorDeGrafoTest {
 		CargadorDeGrafo cargador = new CargadorDeGrafo();
 		cargador.cargar("grafoAristaConVerticeInexistente.txt");
 	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void cargarArchivoConCantidadImparDeEnterosTest() throws Exception{
+		
+		CargadorDeGrafo cargador = new CargadorDeGrafo();
+		cargador.cargar("grafoImpar.txt");
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void cargarArchivoConTextoInvalidoTest() throws Exception{
+		
+		CargadorDeGrafo cargador = new CargadorDeGrafo();
+		cargador.cargar("grafoTextoInvalido.txt");
+	}
 }
