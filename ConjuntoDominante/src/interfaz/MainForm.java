@@ -134,6 +134,8 @@ public class MainForm extends JFrame {
 
 				} catch (FileNotFoundException ex) {
 					JOptionPane.showMessageDialog(this, "no se encontro el archivo");
+				} catch (IllegalArgumentException ex) {
+					JOptionPane.showMessageDialog(this, ex.getMessage());
 				}
 			}
 		});

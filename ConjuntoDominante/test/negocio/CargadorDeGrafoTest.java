@@ -21,5 +21,25 @@ public class CargadorDeGrafoTest {
 		Grafo grafo = cargador.cargar("grafo.txt");
 		assertEquals(4, grafo.cantidadAristas());
 	}
-
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void cargarArchivoVacioTest() throws Exception{
+		
+		CargadorDeGrafo cargador = new CargadorDeGrafo();
+		cargador.cargar("grafoVacio.txt");
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void cargarArchivoConVerticesNegativosTest() throws Exception{
+		
+		CargadorDeGrafo cargador = new CargadorDeGrafo();
+		cargador.cargar("grafoNegativo.txt");
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void cargarArchivoConAristaConVerticeInexistenteTest() throws Exception{
+		
+		CargadorDeGrafo cargador = new CargadorDeGrafo();
+		cargador.cargar("grafoAristaConVerticeInexistente.txt");
+	}
 }
